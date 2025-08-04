@@ -18,5 +18,45 @@ Feature 2:
 4. Sort the parking spots by distance.
 5. Return the closest parking spot.
 '''
+
+from .get_GPS_location import get_location
+from .get_Zone import get_zone
+import logging
+from .get_Cleaning_Schedule import get_cleaning_schedule
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+
 def __main__():
-    pass
+    """
+    Main function to execute the script.
+    :return: None
+    """
+    # Get the GPS location of the vehicle
+    location = get_location()
+    latitude = location['latitude']
+    longitude = location['longitude']
+    
+    # Get the zone based on GPS location
+    zone = get_zone(latitude, longitude)
+    
+    if not isinstance(zone, dict):
+        logging.error("Failed to retrieve zone information.")
+        logging.error(zone)
+        return
+    # Print the results
+    logging.info(f"Ward: {zone['ward']}, Section: {zone['section']}")
+
+    # Get the street cleaning schedule for the zone
+    logging.info(f"Fetching cleaning schedule for Ward: {zone['ward']}, Section: {zone['section']}")
+    cleaning_schedule = get_cleaning_schedule(zone['ward'], zone['section'])
+    if cleaning_schedule is not None:
+        logging.info(f"Cleaning schedule for Ward: {zone['ward']}, Section: {zone['section']}:\n{cleaning_schedule}")
+    else:
+        logging.warning(f"No cleaning schedule found for Ward: {zone['ward']}, Section: {zone['precinct']}.")
+
+if __name__ == "__main__":
+    __main__()
+    logging.info("Main function executed successfully.")

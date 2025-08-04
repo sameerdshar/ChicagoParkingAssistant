@@ -9,6 +9,8 @@ import json
 import ast
 from datetime import date
 import logging
+from datetime import datetime as dt
+from dateutil.relativedelta import relativedelta
 
 logging.basicConfig(
     level=logging.INFO,
@@ -35,7 +37,7 @@ def get_cleaning_schedule_from_api():
 
     # Specify the dataset identifier (found in the URL of the dataset on the portal)
     # dataset_identifier = "p293-wvbd" 
-    dataset_identifier = "a2xx-z2ja"
+    dataset_identifier = "utb4-q645"
     offset = 0
     all_results = []
     try:
@@ -55,26 +57,50 @@ def get_cleaning_schedule_from_api():
     client.close()
     logging.info("Data retrieval complete. Processing the results.")
 
-    # Convert the list of dictionaries to a DataFrame for easier manipulation
+    # # Convert the list of dictionaries to a DataFrame for easier manipulation
     df = pd.DataFrame(all_results)
-    df['year'] = date.today().year
-    df['dates_list'] = df['dates'].str.split(',').apply(
-        lambda lst: [int(i.strip()) for i in lst if i.strip().isdigit()])
-    df['dates_list'] = df['dates'].str.split(',').apply(safe_int_list)
-    df['month_number'] = df['month_number'].astype('int64')
-    df = df.explode('dates_list')
 
-    df['date'] = pd.to_datetime({
-        'year': df['year'],
-        'month': df['month_number'],
-        'day': df['dates_list']
-        })
+    normalized_df = pd.json_normalize(df['the_geom'])
+    df = pd.concat([df.drop(['the_geom'], axis=1), normalized_df], axis=1)
+
+    while len(df.coordinates[0]) == 1:
+        df['coordinates'] = df['coordinates'].apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else x)
+        df = df.explode('coordinates').reset_index(drop=True)
+
+    df['coordinates'] = df['coordinates'].apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else x)
 
     df.to_csv("cleaning_schedule.csv", index=False)
     logging.info("Data retrieval complete. Data saved to 'cleaning_schedule.csv'.")
     # Print the total number of records retrieved
 
     logging.info(f"Total records retrieved: {len(df)}")
+
+def get_cleaning_schedule(ward, section):
+    """
+    Fetch the street cleaning schedule for the current year.
+    :return: DataFrame containing the street cleaning schedule.
+    """
+    try:
+        df = pd.read_csv("cleaning_schedule.csv")
+        logging.info("Cleaning schedule loaded from 'cleaning_schedule.csv'.")
+ 
+    except FileNotFoundError:
+        logging.error("Cleaning schedule file not found. Please run the data fetching script first.")
+        return None
+
+    concatenated_ward_section = f"{ward}{section}"
+    logging.info(f"Fetching cleaning schedule for Ward: {ward}, Section: {section} (Concatenated: {concatenated_ward_section})")
+    filtered_df = df[df.ward_section == concatenated_ward_section]
+
+    print(df[df.ward_section == concatenated_ward_section])
+    if filtered_df.empty:
+        logging.warning(f"No cleaning schedule found for Ward: {ward}, Section: {section}.")
+        return None
+    logging.info(f"Found {len(filtered_df)} records for Ward: {ward}, Section: {section}.")
+    month = dt.now().strftime("%B")
+    next_month = (dt.now() + relativedelta(months=1)).strftime("%B")
+    return filtered_df[['ward', 'section', month.lower(), next_month.lower()]]
+
 
 def __main__():
     """

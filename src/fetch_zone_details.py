@@ -53,6 +53,8 @@ def get_zone_details():
         df = df.explode('coordinates').reset_index(drop=True)
 
     df['coordinates'] = df['coordinates'].apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else x)
+    df['ward'] = pd.to_numeric(df['ward'], errors='coerce').astype('Int64')
+    df['precinct'] = pd.to_numeric(df['precinct'], errors='coerce').astype('Int64')
     df.to_csv("chicago_zones.csv", index=False)
     logging.info("Zone details saved to 'chicago_zones.csv'.")
     logging.info(f"Total records retrieved: {len(df)}")

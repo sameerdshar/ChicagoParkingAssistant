@@ -22,31 +22,18 @@ def create_multipolygons(coordinates):
     :return: A MultiPolygon object.'''
     
     logging.info("Creating MultiPolygon from coordinates.")
-    if not coordinates or not isinstance(coordinates, pd.Series):
-        logging.error("Invalid coordinates input.")
-        return None
     
     try:
         polygons = coordinates.apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else x).tolist()
-    except Exception as e:
-        logging.error(f"Error parsing coordinates: {e}")
-        return None
-    try:
         polygons = [Polygon(polygon) for polygon in polygons if isinstance(polygon, list) and len(polygon) > 0]
         if not polygons:
             logging.error("No valid polygons found in the coordinates.")
             return None
-    except Exception as e:
-        logging.error(f"Error creating polygons: {e}")
-        return None
-
-    try:
         multi_poly = MultiPolygon(polygons)
+        return multi_poly
     except Exception as e:
         logging.error(f"Error creating MultiPolygon: {e}")
         return None
-
-    return multi_poly
 
 def get_zone(lat, long):
     """
@@ -68,7 +55,7 @@ def get_zone(lat, long):
     logging.info("Creating Point object with valid coordinates.")   
     
     try:
-        point = Point(lat, long)
+        point = Point(long, lat)
     except Exception as e:
         logging.error(f"Error creating Point object: {e}")
         return "Error creating point"
@@ -76,9 +63,9 @@ def get_zone(lat, long):
     
     # Read the CSV file containing zone data
     try:
-        df = pd.read_csv("chicago_zones.csv")
+        df = pd.read_csv("cleaning_schedule.csv")
     except FileNotFoundError:
-        logging.error("chicago_zones.csv file not found.")
+        logging.error("cleaning_schedule.csv file not found.")
         return "Zone data file not found"
     except Exception as e:
         logging.error(f"Error reading zone data file: {e}")
@@ -90,10 +77,11 @@ def get_zone(lat, long):
     try:
         logging.info("Iterating through wards and precincts to find matching zone.")
         for ward in df.ward.unique():
-            for precinct in df.precinct.unique():
-                multipolygon = create_multipolygons(df[(df.ward == ward) & (df.precinct == precinct)].coordinates)
-                if point.within(multipolygon):
-                    return ward, precinct
+            for section in df[df.ward == ward].section.unique():
+                multipolygon = create_multipolygons(df[(df.ward == ward) & (df.section == section)].coordinates)
+                if multipolygon and point.within(multipolygon):
+                    return {'ward':ward,
+                            'section':section}
     except Exception as e:
         logging.error(f"Error checking point within polygons: {e}")
         return "Error checking zone"
@@ -105,8 +93,8 @@ def __main__():
     Main function to execute the script.
     :return: None
     """
-    ward, section = get_zone(-87.70651898131568, 41.922342780375264)
-    print(f"Ward: {ward} and Section: {section}")
+    result = get_zone(-87.70651898131568, 41.922342780375264)
+    print(f"Ward: {result['ward']} and Section: {result['precinct']}")
 
 if __name__ == "__main__":
     __main__()
