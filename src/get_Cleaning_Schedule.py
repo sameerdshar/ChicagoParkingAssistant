@@ -11,6 +11,7 @@ from datetime import date
 import logging
 from datetime import datetime as dt
 from dateutil.relativedelta import relativedelta
+from .db_operations import create_table, get_engine
 
 logging.basicConfig(
     level=logging.INFO,
@@ -24,6 +25,24 @@ def safe_int_list(lst):
     :return: A list of integers.
     '''
     return [int(i.strip()) for i in lst if i.strip().isdigit()]
+
+def extract_dates(row):
+    dates = []
+    year = date.today().year
+    # Melt the DataFrame to long format
+    months = ['april', 'may', 'june', 'july', 'august', 'september', 'october', 'november']
+    month_map = {month: i + 4 for i, month in enumerate(months)}
+    for month in months:
+        days_str = str(row[month])
+        if days_str:
+            try:
+                days = [int(day.strip()) for day in days_str.split(',') if day.strip().isdigit()]
+                for day in days:
+                    cleaning_date = dt(year, month_map[month], day).strftime('%Y-%m-%d')
+                    dates.append(cleaning_date)
+            except Exception:
+                continue  # skip invalid entries
+    return dates
 
 def get_cleaning_schedule_from_api():
     """
@@ -64,12 +83,16 @@ def get_cleaning_schedule_from_api():
     df = pd.concat([df.drop(['the_geom'], axis=1), normalized_df], axis=1)
 
     while len(df.coordinates[0]) == 1:
-        df['coordinates'] = df['coordinates'].apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else x)
+        df['coordinates'] = df['coordinates'].apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else x).tolist()
         df = df.explode('coordinates').reset_index(drop=True)
 
-    df['coordinates'] = df['coordinates'].apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else x)
+    df['coordinates'] = df['coordinates'].apply(json.dumps)
 
-    df.to_csv("cleaning_schedule.csv", index=False)
+    df['date'] = df.apply(extract_dates, axis=1)
+    df = df.explode('date').reset_index(drop=True)
+
+    df['date'] = pd.to_datetime(df['date'], errors='coerce')
+    create_table('cleaning_schedule', df)
     logging.info("Data retrieval complete. Data saved to 'cleaning_schedule.csv'.")
     # Print the total number of records retrieved
 
@@ -80,26 +103,29 @@ def get_cleaning_schedule(ward, section):
     Fetch the street cleaning schedule for the current year.
     :return: DataFrame containing the street cleaning schedule.
     """
+    date_today = date.today()
+    end_date = date_today + relativedelta(months=1)
+
+    query = f"""
+    SELECT date FROM "CPA".cleaning_schedule
+    WHERE ward_id = '{ward}' AND section_id = '{section}'
+    AND date >= TO_TIMESTAMP('{date_today}', 'YYYY-MM-DD') AND date <= TO_TIMESTAMP('{end_date}', 'YYYY-MM-DD')
+    ORDER BY date
+    """
+
+    engine = get_engine()
     try:
-        df = pd.read_csv("cleaning_schedule.csv")
-        logging.info("Cleaning schedule loaded from 'cleaning_schedule.csv'.")
- 
-    except FileNotFoundError:
-        logging.error("Cleaning schedule file not found. Please run the data fetching script first.")
+        with engine.connect() as connection:
+            df = pd.read_sql(query, connection)
+        if df.empty:
+            logging.warning(f"No cleaning schedule found for Ward: {ward}, Section: {section}.")
+            return None
+        else:
+            logging.info(f"Cleaning schedule found for Ward: {ward}, Section: {section}.")
+            return df.date.tolist()
+    except Exception as e:
+        logging.error(f"An error occurred while fetching the cleaning schedule: {e}")
         return None
-
-    concatenated_ward_section = f"{ward}{section}"
-    logging.info(f"Fetching cleaning schedule for Ward: {ward}, Section: {section} (Concatenated: {concatenated_ward_section})")
-    filtered_df = df[df.ward_section == concatenated_ward_section]
-
-    print(df[df.ward_section == concatenated_ward_section])
-    if filtered_df.empty:
-        logging.warning(f"No cleaning schedule found for Ward: {ward}, Section: {section}.")
-        return None
-    logging.info(f"Found {len(filtered_df)} records for Ward: {ward}, Section: {section}.")
-    month = dt.now().strftime("%B")
-    next_month = (dt.now() + relativedelta(months=1)).strftime("%B")
-    return filtered_df[['ward', 'section', month.lower(), next_month.lower()]]
 
 
 def __main__():
@@ -108,5 +134,8 @@ def __main__():
     :return: None
     """
     get_cleaning_schedule_from_api()
+    # result = get_cleaning_schedule(48, 6)
+    # print(result)
+
 if __name__ == "__main__":
     __main__()

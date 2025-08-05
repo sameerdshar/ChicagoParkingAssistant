@@ -23,6 +23,7 @@ from .get_GPS_location import get_location
 from .get_Zone import get_zone
 import logging
 from .get_Cleaning_Schedule import get_cleaning_schedule
+from datetime import datetime as dt, date
 
 logging.basicConfig(
     level=logging.INFO,
@@ -52,8 +53,15 @@ def __main__():
     # Get the street cleaning schedule for the zone
     logging.info(f"Fetching cleaning schedule for Ward: {zone['ward']}, Section: {zone['section']}")
     cleaning_schedule = get_cleaning_schedule(zone['ward'], zone['section'])
-    if cleaning_schedule is not None:
-        logging.info(f"Cleaning schedule for Ward: {zone['ward']}, Section: {zone['section']}:\n{cleaning_schedule}")
+    schedule = []
+    for i in cleaning_schedule:
+        if i.date() == date.today() and dt.now().hour < 14:
+            schedule.append(i.date().strftime('%Y-%m-%d'))
+        elif i.date() > date.today():
+            schedule.append(i.date().strftime('%Y-%m-%d'))
+
+    if schedule is not None:
+        logging.info(f"Cleaning schedule for Ward in the next 30 days: {zone['ward']}, Section: {zone['section']}:\n{schedule}")
     else:
         logging.warning(f"No cleaning schedule found for Ward: {zone['ward']}, Section: {zone['precinct']}.")
 

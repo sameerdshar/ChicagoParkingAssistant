@@ -6,6 +6,8 @@ from shapely.geometry import MultiPolygon, Point, Polygon
 import pandas as pd
 import ast
 import logging
+from .db_operations import get_engine
+import json
 
 logging.basicConfig(
     level=logging.INFO,
@@ -59,26 +61,28 @@ def get_zone(lat, long):
     except Exception as e:
         logging.error(f"Error creating Point object: {e}")
         return "Error creating point"
-    logging.info("Reading zone data from CSV file.")
+    logging.info("Loading Ward Cleaning Data.")
     
     # Read the CSV file containing zone data
+    query = """SELECT ward_id, section_id, coordinates FROM "CPA".cleaning_schedule"""
+    engine = get_engine()
     try:
-        df = pd.read_csv("cleaning_schedule.csv")
-    except FileNotFoundError:
-        logging.error("cleaning_schedule.csv file not found.")
-        return "Zone data file not found"
+        with engine.connect() as connection:
+            df = pd.read_sql(query, connection)
     except Exception as e:
-        logging.error(f"Error reading zone data file: {e}")
-        return "Error reading zone data file"
+        logging.error(f"Error fetching zone data: {e}")
+        return "Error fetching zone data from the database"
     
+    df['coordinates'] = df['coordinates'].apply(json.loads)
     logging.info("Creating MultiPolygon for each ward and precinct.")
     
     # Iterate through each ward and precinct to find the matching zone
     try:
         logging.info("Iterating through wards and precincts to find matching zone.")
-        for ward in df.ward.unique():
-            for section in df[df.ward == ward].section.unique():
-                multipolygon = create_multipolygons(df[(df.ward == ward) & (df.section == section)].coordinates)
+        for ward in df.ward_id.unique():
+            for section in df[df.ward_id == ward].section_id.unique():
+                # print(df[(df.ward_id == ward) & (df.section_id == section)].coordinates)
+                multipolygon = create_multipolygons(df[(df.ward_id == ward) & (df.section_id == section)].coordinates)
                 if multipolygon and point.within(multipolygon):
                     return {'ward':ward,
                             'section':section}
