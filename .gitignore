@@ -3,4 +3,3 @@
 .venv/
 PIPFILE
 Pipfile.lock
-# Ignore the virtual environment directory
