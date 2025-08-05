@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Geocode Address</title>
+</head>
+<body>
+    <h2>Enter an address to get coordinates</h2>
+    <form method="POST">
+        <input type="text" name="address" placeholder="Enter address" required>
+        <button type="submit">Get Cleaning Schedule</button>
+    </form>
+
+    {% if coords %}
+        <h3>Results:</h3>
+        {% if coords.error %}
+            <p>{{ coords.error }}</p>
+        {% else %}
+            <p><strong>Cleaning Dates:</strong> {{ coords }}</p>
+            <!-- <p><strong>Longitude:</strong> {{ coords.lng }}</p> -->
+        {% endif %}
+    {% endif %}
+</body>
+</html>
