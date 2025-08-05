@@ -1,0 +1,6 @@
+database:
+  DB_NAME: 'CHICAGO_PARKING_ASSISSTANT'
+  DB_USER: 'postgres'
+  DB_PASSWORD: 'L5l5G50@Postgres'
+  DB_HOST: 'localhost'
+  DB_PORT: 5432
