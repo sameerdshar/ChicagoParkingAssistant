@@ -3,3 +3,4 @@
 .venv/
 PIPFILE
 Pipfile.lock
+test.py
