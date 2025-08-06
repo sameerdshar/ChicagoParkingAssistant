@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request
 import requests
-from get_Cleaning_Schedule import get_cleaning_schedule
+from get_Cleaning_Schedule import get_cleaning_schedule, get_cleaning_schedule_from_api
 import logging
 from get_Zone import get_zone
 from datetime import date
@@ -39,6 +39,7 @@ def index():
             coords = {'error': 'Could not geocode address'}
         
         # Get the zone based on GPS location
+        get_cleaning_schedule_from_api()
         zone = get_zone(float(coords['lat']), float(coords['lng']))
     
         if not isinstance(zone, dict):
