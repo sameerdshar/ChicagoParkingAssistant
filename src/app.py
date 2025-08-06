@@ -52,11 +52,16 @@ def index():
 
         cleaning_schedule = get_cleaning_schedule(zone['ward'], zone['section'])
         schedule = []
-        for i in cleaning_schedule:
-            if i.date() == date.today() and dt.now().hour < 14:
-                schedule.append(i.date().strftime('%Y-%m-%d'))
-            elif i.date() > date.today():
-                schedule.append(i.date().strftime('%Y-%m-%d'))
+        if cleaning_schedule:
+            for i in cleaning_schedule:
+                if i.date() == date.today() and dt.now().hour < 14:
+                    schedule.append(i.date().strftime('%Y-%m-%d'))
+                elif i.date() > date.today():
+                    schedule.append(i.date().strftime('%Y-%m-%d'))
+        
+        else:
+            coords = {'error': 'Could not retrieve zone information.'}
+            return render_template('index.html', coords=coords)
 
         if schedule is not None:
             logging.info(f"Cleaning schedule for Ward in the next 30 days: {zone['ward']}, Section: {zone['section']}:\n{schedule}")
