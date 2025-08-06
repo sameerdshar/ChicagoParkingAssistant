@@ -39,7 +39,6 @@ def index():
             coords = {'error': 'Could not geocode address'}
         
         # Get the zone based on GPS location
-        get_cleaning_schedule_from_api()
         zone = get_zone(float(coords['lat']), float(coords['lng']))
     
         if not isinstance(zone, dict):

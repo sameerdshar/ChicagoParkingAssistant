@@ -41,8 +41,5 @@ def create_table(table_name: str, data: pd.DataFrame) -> None:
     :return: None
     """
     engine = get_engine()
-    query = """CREATE SCHEMA IF NOT EXISTS CPA;"""
-    with engine.connect() as connection:
-        connection.execute(sa.text(query))
     data.to_sql(table_name, con=engine, schema='CPA', if_exists='replace', index=False)
     
