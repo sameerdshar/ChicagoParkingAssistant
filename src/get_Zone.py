@@ -6,7 +6,7 @@ from shapely.geometry import MultiPolygon, Point, Polygon
 import pandas as pd
 import ast
 import logging
-from .db_operations import get_engine
+from db_operations import get_engine
 import json
 
 logging.basicConfig(
