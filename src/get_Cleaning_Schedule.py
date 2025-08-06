@@ -11,7 +11,7 @@ from datetime import date
 import logging
 from datetime import datetime as dt
 from dateutil.relativedelta import relativedelta
-from .db_operations import create_table, get_engine
+from db_operations import create_table, get_engine
 
 logging.basicConfig(
     level=logging.INFO,

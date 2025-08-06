@@ -19,10 +19,10 @@ Feature 2:
 5. Return the closest parking spot.
 '''
 
-from .get_GPS_location import get_location
-from .get_Zone import get_zone
+from get_GPS_location import get_location
+from get_Zone import get_zone
 import logging
-from .get_Cleaning_Schedule import get_cleaning_schedule
+from get_Cleaning_Schedule import get_cleaning_schedule
 from datetime import datetime as dt, date
 
 logging.basicConfig(

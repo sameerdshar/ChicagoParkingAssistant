@@ -1,8 +1,8 @@
 from flask import Flask, render_template, request
 import requests
-from .get_Cleaning_Schedule import get_cleaning_schedule
+from get_Cleaning_Schedule import get_cleaning_schedule
 import logging
-from .get_Zone import get_zone
+from get_Zone import get_zone
 from datetime import date
 from datetime import datetime as dt
 
