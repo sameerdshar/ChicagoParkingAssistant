@@ -46,6 +46,8 @@ def index():
             logging.error(zone)
             coords = {'error': 'Could not retrieve zone information.'}
         # Print the results
+        logging.info(f"Coordinates: {coords}")
+        logging.info(f"Zone Details: {zone}")
         logging.info(f"Ward: {zone['ward']}, Section: {zone['section']}")
 
         cleaning_schedule = get_cleaning_schedule(zone['ward'], zone['section'])
