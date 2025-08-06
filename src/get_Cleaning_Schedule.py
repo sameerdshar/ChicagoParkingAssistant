@@ -93,7 +93,7 @@ def get_cleaning_schedule_from_api():
 
     df['date'] = pd.to_datetime(df['date'], errors='coerce')
     create_table('cleaning_schedule', df)
-    logging.info("Data retrieval complete. Data saved to 'cleaning_schedule.csv'.")
+    logging.info("Data retrieval complete. Data saved to table 'cleaning_schedule' in the database.")
     # Print the total number of records retrieved
 
     logging.info(f"Total records retrieved: {len(df)}")
@@ -107,7 +107,7 @@ def get_cleaning_schedule(ward, section):
     end_date = date_today + relativedelta(months=1)
 
     query = f"""
-    SELECT date FROM CPA.cleaning_schedule
+    SELECT date FROM 'CPA'.cleaning_schedule
     WHERE ward_id = '{ward}' AND section_id = '{section}'
     AND date >= TO_TIMESTAMP('{date_today}', 'YYYY-MM-DD') AND date <= TO_TIMESTAMP('{end_date}', 'YYYY-MM-DD')
     ORDER BY date

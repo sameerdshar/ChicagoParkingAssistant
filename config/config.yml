@@ -1,5 +1,6 @@
 database:
   DB_NAME: 'chicago_parking_assistant'
+  DB_SCHEMA: 'cpa'
   DB_USER: 'chicago_parking_assistant_user'
   DB_PASSWORD: 'M9fMbUcIYztWa58Ozb252Nz4td27YcnA'
   DB_HOST: 'dpg-d29qd8jipnbc73b73eag-a.oregon-postgres.render.com'

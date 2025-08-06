@@ -64,7 +64,7 @@ def get_zone(lat, long):
     logging.info("Loading Ward Cleaning Data.")
     
     # Read the CSV file containing zone data
-    query = """SELECT ward_id, section_id, coordinates FROM CPA.cleaning_schedule"""
+    query = f"""SELECT ward_id, section_id, coordinates FROM 'cpa'.cleaning_schedule"""
     engine = get_engine()
     try:
         with engine.connect() as connection:
