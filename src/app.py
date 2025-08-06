@@ -60,7 +60,7 @@ def index():
                     schedule.append(i.date().strftime('%Y-%m-%d'))
         
         else:
-            coords = {'error': 'Could not retrieve zone information.'}
+            coords = {'error': 'No cleaning Schedule for the zone.'}
             return render_template('index.html', coords=coords)
 
         if schedule is not None:
