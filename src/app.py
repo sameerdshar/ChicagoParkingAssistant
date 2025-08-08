@@ -37,7 +37,7 @@ def index():
         if not isinstance(zone, dict):
             logging.error("Failed to retrieve zone information.")
             logging.error(zone)
-            coords = {"error": "Could not retrieve zone information."}
+            coords = {"error": "Address not in Chicago."}
             return render_template("index.html", coords=coords)
         # Print the results
         logging.info(f"Coordinates: {coords}")
