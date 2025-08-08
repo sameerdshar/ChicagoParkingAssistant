@@ -38,6 +38,7 @@ def index():
             logging.error("Failed to retrieve zone information.")
             logging.error(zone)
             coords = {"error": "Could not retrieve zone information."}
+            return render_template("index.html", coords=coords)
         # Print the results
         logging.info(f"Coordinates: {coords}")
         logging.info(f"Zone Details: {zone}")
