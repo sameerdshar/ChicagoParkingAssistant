@@ -1,14 +1,13 @@
-'''
+"""
 This file gives the code for triangulating the vehicle in real time.
 
-'''
+"""
 
 import geocoder
 import logging
 
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 
 # import objc
@@ -43,6 +42,7 @@ logging.basicConfig(
 #         # manager.stopUpdatingLocation()
 #         self.has_location = False
 
+
 def get_location():
     logging.info("Starting location retrieval process.")
     # # Create a CLLocationManager instance
@@ -73,21 +73,20 @@ def get_location():
     # # Wait until we get a location or fail
     # while not delegate.has_location:
     #     NSRunLoop.currentRunLoop().runUntilDate_(NSDate.dateWithTimeIntervalSinceNow_(0.1))
-    
+
     logging.info("Fetching location using IP.")
-    g = geocoder.ip('me')
+    g = geocoder.ip("me")
     if g.ok:
         latitude, longitude = g.latlng
-        logging.info(f"Location fetched successfully: Latitude={latitude}, Longitude={longitude}")
+        logging.info(
+            f"Location fetched successfully: Latitude={latitude}, Longitude={longitude}"
+        )
 
     else:
         logging.error("Failed to fetch location.")
         latitude, longitude = None, None
 
-    return {
-        'latitude': latitude,
-        'longitude': longitude
-    }
+    return {"latitude": latitude, "longitude": longitude}
 
 
 if __name__ == "__main__":
