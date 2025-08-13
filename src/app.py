@@ -22,7 +22,7 @@ def index():
         url = "https://nominatim.openstreetmap.org/search"
         params = {"q": address, "format": "json", "limit": 1}
         headers = {
-            "User-Agent": "MyGeocodingApp/1.0 (your.email@example.com)"  # Set a real email if deploying
+            "User-Agent": "MyGeocodingApp/1.0 (sameer.fall2016@gmail.com)"  # Set a real email if deploying
         }
         response = requests.get(url, params=params, headers=headers)
         data = response.json()
