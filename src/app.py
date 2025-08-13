@@ -15,8 +15,9 @@ app = Flask(__name__)
 
 
 @app.route("/", methods=["GET", "POST"])
-current_city = "Chicago"
+
 def index():
+    current_city = "Chicago"
     coords = None
     if request.method == "POST":
         address = request.form["address"]
