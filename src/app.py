@@ -28,8 +28,8 @@ def index():
         data = response.json()
         if data:
             address = data[0].get("display_name", {})
-            # city = address.get("city") or address.get("town") or address.get("village") or address.get("hamlet")
-            logging.info(f"City response: {address}")
+            city = address.split(",")[-5].strip() if len(address.split(",")) > 4 else None
+            logging.info(f"City response: {city}")
             coords = {"lat": data[0]["lat"], "lng": data[0]["lon"]}
         else:
             coords = {"error": "Could not geocode address"}
