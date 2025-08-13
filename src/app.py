@@ -15,6 +15,7 @@ app = Flask(__name__)
 
 
 @app.route("/", methods=["GET", "POST"])
+current_city = "Chicago"
 def index():
     coords = None
     if request.method == "POST":
@@ -29,7 +30,10 @@ def index():
         if data:
             address = data[0].get("display_name", {})
             city = address.split(",")[-5].strip() if len(address.split(",")) > 4 else None
-            logging.info(f"City response: {city}")
+            if city != current_city:
+                logging.error(f"City mismatch: {city} != {current_city}")
+                coords = {"error": "Address not in Chicago."}
+                return render_template("index.html", coords=coords)
             coords = {"lat": data[0]["lat"], "lng": data[0]["lon"]}
         else:
             coords = {"error": "Could not geocode address"}
