@@ -29,7 +29,7 @@ def index():
         if data:
             address = data[0].get("address", {})
             city = address.get("city") or address.get("town") or address.get("village") or address.get("hamlet")
-            logging.info(f"City response: {city}")
+            logging.info(f"City response: {address}")
             coords = {"lat": data[0]["lat"], "lng": data[0]["lon"]}
         else:
             coords = {"error": "Could not geocode address"}
