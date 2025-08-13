@@ -27,6 +27,7 @@ def index():
         response = requests.get(url, params=params, headers=headers)
         data = response.json()
         if data:
+            logging.info(f"Geocoding response: {data}")
             coords = {"lat": data[0]["lat"], "lng": data[0]["lon"]}
         else:
             coords = {"error": "Could not geocode address"}
